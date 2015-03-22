@@ -49,7 +49,7 @@ public class GameController extends ApplicationAdapter {
 	SoundEngine sound;
 	SoundEngine sound2;
 	boolean gameState=true;
-
+	boolean test=true;
 
 	@Override
 	public void create () {
