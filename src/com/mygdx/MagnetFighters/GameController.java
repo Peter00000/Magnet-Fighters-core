@@ -1,29 +1,23 @@
 package com.mygdx.MagnetFighters;
 
-
-
-
-import sun.font.TrueTypeFont;
-
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
-public class GameController extends ApplicationAdapter {
+public class GameController implements Screen{
 
 	SpriteBatch batch;
 	private static int frameRows=2;
@@ -46,13 +40,13 @@ public class GameController extends ApplicationAdapter {
 	FloatingPlatform[] platforms;
 	final boolean FLOOR=false;
 	Texture winScreen;
-	SoundEngine sound;
-	SoundEngine sound2;
 	boolean gameState=true;
-	boolean test=true;
+	MagnetFighters game;
 
-	@Override
-	public void create () {
+	public GameController(final MagnetFighters g) 
+	{
+		super();
+		game=g;
 		batch = new SpriteBatch();
 		world = new World(new Vector2(0, GRAVITY), true);
 		Texture walkSheet=new Texture(Gdx.files.internal("human.png"));
@@ -92,33 +86,39 @@ public class GameController extends ApplicationAdapter {
 		shapeRenderer=new ShapeRenderer();
 		font=new BitmapFont();
 		font.setScale(10f);
-		sound=new SoundEngine();
-		sound2=new SoundEngine();
-		sound.setMusicVolume(0.5f);
-		sound.setSoundVolume(1f);
-		sound.playMusic((int)(Math.random()*3));
-		sound2.setMusicVolume(0.8f);
 	}
 
 	@Override
-	public void render () 
+	public void render (float delta) 
 	{
-		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
-		{
-			this.dispose();
-			System.exit(0);
-		}
+		//		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
+		//		{
+		//			this.dispose();
+		//			System.exit(0);
+		//		}
 		if (Gdx.input.isKeyPressed(Keys.NUM_9))
 			if (Gdx.input.isKeyPressed(Keys.NUM_8))
 				if (Gdx.input.isKeyPressed(Keys.NUM_7))
-						resetGame();
+				{
+					game.sounds.stopMusic();
+					game.ui.gameState=1;
+					game.setScreen(game.ui);
+					game.sounds.playMusic(6);
+					resetGame();
+				}
+		if (Gdx.input.isKeyPressed(Keys.NUM_6))
+			if (Gdx.input.isKeyPressed(Keys.NUM_5))
+			{
+				game.sounds.stopMusic();
+				game.sounds.playMusic((int)(Math.random()*6));
+				resetGame();
+			}
 
 		if (player1.health==0||player2.health==0)
 		{
-			sound.stopMusic();
-			sound.stopSound();
 			if (gameState)
-			{
+			{ 
+				game.sounds.stopSound();
 				try 
 				{
 					Thread.sleep(2000);
@@ -127,8 +127,9 @@ public class GameController extends ApplicationAdapter {
 				{
 					e.printStackTrace();
 				}
+				game.sounds.stopMusic();
+				game.sounds.playMusic(7);
 			}
-			sound2.playMusic(3);
 			if (player1.health>0)
 				winMessage(player1);
 			else
@@ -150,7 +151,7 @@ public class GameController extends ApplicationAdapter {
 			kickPlayers();
 		}
 		controlPlayer(player1,Keys.UP,Keys.DOWN,Keys.RIGHT,Keys.LEFT,Keys.SHIFT_RIGHT);
-		controlPlayer(player2,Keys.W,Keys.S,Keys.D,Keys.A,Keys.T );
+		controlPlayer(player2,Keys.W,Keys.S,Keys.D,Keys.A,Keys.NUM_1 );
 		batch.end();
 		if (DEBUG)
 			boxDebugRender.render(world, DebugMatrix);
@@ -232,7 +233,8 @@ public class GameController extends ApplicationAdapter {
 			{
 				player1.getKicked(player2.sprite.getX()>player1.sprite.getX(),1f,true);
 				player2.getKicked(player2.sprite.getX()<player1.sprite.getX(),0.2f,false);
-				sound.playSound(0, 0);
+				player2.kickAttack=false;
+				game.sounds.playSound(0, 0);
 			}
 		}
 
@@ -242,7 +244,8 @@ public class GameController extends ApplicationAdapter {
 			{
 				player2.getKicked(player1.sprite.getX()>player2.sprite.getX(),1f,true);
 				player1.getKicked(player1.sprite.getX()<player2.sprite.getX(),0.2f,false);
-				sound.playSound(0, 0);
+				player1.kickAttack=false;
+				game.sounds.playSound(0, 0);
 			}
 		}
 	}
@@ -263,7 +266,7 @@ public class GameController extends ApplicationAdapter {
 		{
 			if (!player.isJumping)
 			{
-				sound.playSound(1,0);
+				game.sounds.playSound(1,0);
 			}
 			player.jump();
 		}
@@ -326,14 +329,37 @@ public class GameController extends ApplicationAdapter {
 	{		
 		player1.body.setTransform((float)(-Math.random()*Gdx.graphics.getWidth()/2)/PIXELS_TO_METERS, Gdx.graphics.getHeight()/PIXELS_TO_METERS, 0);
 		player2.body.setTransform((float)(-Math.random()*Gdx.graphics.getWidth()/2)/PIXELS_TO_METERS, Gdx.graphics.getHeight()/PIXELS_TO_METERS, 0);
-		player1.body.setLinearVelocity(0.001f,player1.body.getLinearVelocity().x);
-		player2.body.setLinearVelocity(0.001f,player2.body.getLinearVelocity().x);
+		player1.body.setLinearVelocity(0.001f,0f);
+		player2.body.setLinearVelocity(0.001f,0f);
 		player1.isKicked=false;player2.isKicked=false;player1.kickColor=false;player2.kickColor=false;
 		player1.health=100f;
 		player2.health=100f;
-		sound2.terminate();
-		sound.stopMusic();
-		sound.playMusic((int)(Math.random()*3));
 		gameState=true;
+	}
+
+	@Override
+	public void show() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pause() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void resume() {
+
+	}
+
+	@Override
+	public void hide() {
 	}
 }

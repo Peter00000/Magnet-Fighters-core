@@ -12,10 +12,15 @@ public class SoundEngine {
 			"smash1.mp3",
 			"smash2.mp3",
 			"smash3.mp3",
-			"gud.mp3"
+			"sonic1.mp3",
+			"sonic2.mp3",
+			"sonic3.mp3",
+			"menu.mp3",
+			"victory.mp3"
+
 	};
 	private String[] soundFiles = {
-			"kickSound.wav","jump.wav"
+			"kickSound.wav","jump.wav","bang.wav"
 	};
 	private Music[] musics = new Music[musicFiles.length];
 	private Sound[] sounds= new Sound[soundFiles.length];
