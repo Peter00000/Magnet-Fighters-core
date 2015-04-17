@@ -19,71 +19,107 @@ import com.badlogic.gdx.physics.box2d.*;
 
 public class GameController implements Screen{
 
+	/*Game global variables*/
 	SpriteBatch batch;
-	private static int frameRows=2;
-	private static int frameCols=8;
 	World world;
 	BitmapFont font;
-	final float PIXELS_TO_METERS = 100f;
 	OrthographicCamera camera;
-	Box2DDebugRenderer boxDebugRender;
 	Matrix4 DebugMatrix;
+	
+	
+	MagnetFighters game;
+	/*Game indicator booleans*/
+	final boolean DEBUG=false;
+	final boolean FLOOR=false;
+	boolean gameState=true;
+	
+	/*Renderers*/
+	Box2DDebugRenderer boxDebugRender;
 	private Box2DDebugRenderer debugRenderer;
+	ShapeRenderer shapeRenderer;
+	
+	/*Game constants*/
+	private static int frameRows=2;
+	private static int frameCols=8;
+	final float PIXELS_TO_METERS = 100f;
+	final float GRAVITY=-9.8f;
+	final float STEP=1/40f;
+	
+	/*Player and platforms (need to be importable in the future)*/
 	Player player1,player2;
 	EdgePlatform floor,platform1,platform2;
 	FloatingPlatform platform3;
-	final boolean DEBUG=false;
-	ShapeRenderer shapeRenderer;
-	final float GRAVITY=-9.8f;
-	final float STEP=1/40f;
-	Texture background;
 	FloatingPlatform[] platforms;
+<<<<<<< HEAD
 	final boolean FLOOR=false; 
+=======
+	
+	/*Texture, sound, background and other retributes*/
+	Texture background;
+>>>>>>> origin/master
 	Texture winScreen;
-	boolean gameState=true;
-	MagnetFighters game;
-
+	
+	/*The default constructor*/
 	public GameController(final MagnetFighters g) 
 	{
+<<<<<<< HEAD
 		super();		
+=======
+		/*Game initialization*/
+		super();
+>>>>>>> origin/master
 		game=g;
 		batch = new SpriteBatch();
 		world = new World(new Vector2(0, GRAVITY), true);
-		Texture walkSheet=new Texture(Gdx.files.internal("human.png"));
-		Texture walkSheet2=new Texture(Gdx.files.internal("human2.png"));
-		Texture attackSheet=new Texture(Gdx.files.internal("human_kick_calc.png"));
-		Texture attackSheet2=new Texture(Gdx.files.internal("human_kick_calc2.png"));
-		background=new Texture(Gdx.files.internal("background2.jpg"));
-		Texture platformTexture=new Texture(Gdx.files.internal("platformcomp.jpg"));
-		winScreen=new Texture(Gdx.files.internal("You Win.png"));
+		
+		/*Import textures*/
+		Texture walkSheet	=new Texture(Gdx.files.internal("human.png"));
+		Texture walkSheet2	=new Texture(Gdx.files.internal("human2.png"));
+		Texture attackSheet	=new Texture(Gdx.files.internal("human_kick_calc.png"));
+		Texture attackSheet2	=new Texture(Gdx.files.internal("human_kick_calc2.png"));
+		background		=new Texture(Gdx.files.internal("background2.jpg"));
+		Texture platformTexture	=new Texture(Gdx.files.internal("platformcomp.jpg"));
+		winScreen		=new Texture(Gdx.files.internal("You Win.png"));
+		
+		/*Initialize player properties*/
 		player1=new Player(walkSheet,attackSheet,frameRows,frameCols);
 		player1.attackSheet=attackSheet;
 		player1=preparePlayer(player1);
 		player1.color=Color.WHITE;
+		
 		player2=new Player(walkSheet2,attackSheet2,frameRows,frameCols);
 		player2=preparePlayer(player2);
 		player2.color=Color.WHITE;
+		Player[]players={player1,player2};
+		
+		/*Setting up the platforms*/
 		float w = Gdx.graphics.getWidth()/PIXELS_TO_METERS;
 		float h = (Gdx.graphics.getHeight()/2)/PIXELS_TO_METERS;
-		floor=new EdgePlatform(-w*100,-h,w*100,-h,0,0,0.05f);
-		if (FLOOR)
-			floor=preparePlatform(floor);
+		floor	= new EdgePlatform(-w*100,-h,w*100,-h,0,0,0.05f);
+		if (FLOOR)	floor=preparePlatform(floor);
+		
 		platform1=new EdgePlatform(-w/2,-h*100,-w/2,h*100,0,0,0f);
-		//	platform1=preparePlatform(platform1);
+	//	platform1=preparePlatform(platform1);
 		platform2=new EdgePlatform(w/2,-h*100,w/2,h*100,0,0,0f);
-		//	platform2=preparePlatform(platform2);
+	//	platform2=preparePlatform(platform2);
 		platform3=new FloatingPlatform(platformTexture,-650*Gdx.graphics.getWidth()/1920,-175*Gdx.graphics.getHeight()/1080,2000*Gdx.graphics.getWidth()/1920,80*Gdx.graphics.getHeight()/1080);
 		platform3=prepareFloatingPlatform(platform3);
+		
 		EdgePlatform[]edges={floor};
-		Player[]players={player1,player2};
 		FloatingPlatform[] temp={platform3};
 		platforms=temp;
+		
+		/*Windows and world setting*/
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		CollisionDetector c=new CollisionDetector();
-		c.edges=edges; c.platforms=platforms; c.players=players;
+			c.edges=edges; 
+			c.platforms=platforms; 
+			c.players=players;
 		world.setContactListener(c);
 		boxDebugRender = new Box2DDebugRenderer();
 		shapeRenderer=new ShapeRenderer();
+		
+		/*Fonts setting*/
 		font=new BitmapFont();
 		font.setScale(10f);
 	}
@@ -96,6 +132,8 @@ public class GameController implements Screen{
 		//			this.dispose();
 		//			System.exit(0);
 		//		}
+		
+		//Key 9-8-7 combo to reset the game
 		if (Gdx.input.isKeyPressed(Keys.NUM_9))
 			if (Gdx.input.isKeyPressed(Keys.NUM_8))
 				if (Gdx.input.isKeyPressed(Keys.NUM_7))
@@ -106,6 +144,8 @@ public class GameController implements Screen{
 					game.sounds.playMusic(6);
 					resetGame();
 				}
+		
+		//Key 6-5 to reset the game with random music
 		if (Gdx.input.isKeyPressed(Keys.NUM_6))
 			if (Gdx.input.isKeyPressed(Keys.NUM_5))
 			{
@@ -160,6 +200,7 @@ public class GameController implements Screen{
 		camera.update();
 	}
 
+	//Set the player attributes
 	public Player preparePlayer(Player player)
 	{
 		player.createPlayer();
