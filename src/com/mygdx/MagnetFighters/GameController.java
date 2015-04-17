@@ -38,14 +38,14 @@ public class GameController implements Screen{
 	final float STEP=1/40f;
 	Texture background;
 	FloatingPlatform[] platforms;
-	final boolean FLOOR=false;
+	final boolean FLOOR=false; 
 	Texture winScreen;
 	boolean gameState=true;
 	MagnetFighters game;
 
 	public GameController(final MagnetFighters g) 
 	{
-		super();
+		super();		
 		game=g;
 		batch = new SpriteBatch();
 		world = new World(new Vector2(0, GRAVITY), true);
