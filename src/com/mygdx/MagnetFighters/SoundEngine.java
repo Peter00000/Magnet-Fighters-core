@@ -20,7 +20,7 @@ public class SoundEngine {
 
 	};
 	private String[] soundFiles = {
-			"kickSound.wav","jump.wav","shot.wav","laser.wav","impact.wav"
+			"kickSound.wav","jump.wav","shot.wav","laser.wav","impact.wav","life.wav"
 	};
 	private Music[] musics = new Music[musicFiles.length];
 	private Sound[] sounds= new Sound[soundFiles.length];

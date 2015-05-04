@@ -75,6 +75,8 @@ public class GameController implements Screen{
 			background=Assets.computerlab;
 		if (Constants.stage==2)
 			background=Assets.testtubes;
+		if (Constants.stage==3)
+			background=Assets.bandsaws;
 		winScreen=Assets.winscreen;
 		Texture walkSheet=Assets.player1walk;
 		Texture attackSheet=Assets.player1attack;
@@ -105,6 +107,8 @@ public class GameController implements Screen{
 			platforms=Assets.complabPlatforms;
 		if (Constants.stage==2)
 			platforms=Assets.testtubePlatforms;
+		if (Constants.stage==3)
+			platforms=Assets.bandsawPlatforms;
 		for (int i=0;i<platforms.length;i++)
 			platforms[i]=prepareFloatingPlatform(platforms[i]);
 		projectiles=new ArrayList<Projectile>();
@@ -116,10 +120,15 @@ public class GameController implements Screen{
 				items.add(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
 				items.add(new Item(Assets.gradeTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,40,40,2));
 			}
-			else
+			if (Constants.stage==2)
 			{
 				items.add(new Item(Assets.calculatorTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,30,70,1));
 				items.add(new Item(Assets.gradeTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,40,40,2));
+			}
+			if (Constants.stage==3)
+			{
+				items.add(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
+				items.add(new Item(Assets.gradeTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,40,40,2));
 			}
 		}
 		for (int i=0;i<items.size();i++)
@@ -235,6 +244,8 @@ public class GameController implements Screen{
 		{
 			if (projectiles.get(i).dead)
 				continue;
+			if (projectiles.get(i).body.getLinearVelocity().x==0)
+				projectiles.get(i).destroy=true;
 			if (projectiles.get(i).destroy)
 			{
 				destroyItem(projectiles.get(i));
@@ -262,7 +273,6 @@ public class GameController implements Screen{
 			{
 				spawnItem(2);
 			}
-			System.out.println(rand);
 		}
 		for (int i=0;i<items.size();i++)
 		{
@@ -272,7 +282,10 @@ public class GameController implements Screen{
 			{
 				items.get(i).dead=true;
 				world.destroyBody(items.get(i).body);
-				game.sounds.playSound(3, 0,Constants.ITEM_SOUND_LENGTH);
+				if (items.get(i).ID==1)
+					game.sounds.playSound(3, 0,Constants.ITEM_SOUND_LENGTH);
+				if (items.get(i).ID==2)
+					game.sounds.playSound(5, 0,Constants.LIFE_SOUND_LENGTH);
 				items.remove(i);
 				continue;
 			}
@@ -301,9 +314,28 @@ public class GameController implements Screen{
 			if (id==2)
 				i=(new Item(Assets.gradeTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,40,40,2));
 		}
+		if (Constants.stage==3)
+		{
+			int rand=(int)(Math.random()*2);
+			if (id==1)
+			{	
+				if (rand==0)
+					i=(new Item(Assets.calculatorTexture,(float)Math.random()*(Gdx.graphics.getWidth()/2+Assets.bandsawSpawn[0])-Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()*3/4,30,70,1));
+				else
+					i=(new Item(Assets.calculatorTexture,(float)Math.random()*(Gdx.graphics.getWidth()/2-Assets.bandsawSpawn[1])+Assets.bandsawSpawn[1],Gdx.graphics.getHeight()*3/4,30,70,1));
+			}
+			if (id==2)
+			{
+				if (rand==0)
+					i=(new Item(Assets.gradeTexture,(float)Math.random()*(Gdx.graphics.getWidth()/2+Assets.bandsawSpawn[0])-Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()*3/4,40,40,2));
+				else
+					i=(new Item(Assets.gradeTexture,(float)Math.random()*(Gdx.graphics.getWidth()/2-Assets.bandsawSpawn[1])+Assets.bandsawSpawn[1],Gdx.graphics.getHeight()*3/4,40,40,2));
+			}
+		}
 		i=prepareItem(i);
 		items.add(i);
 	}
+
 
 	public Projectile prepareProjectile(Projectile p)
 	{
@@ -311,7 +343,7 @@ public class GameController implements Screen{
 		p.body=world.createBody(p.bodyDef);
 		p.body.setUserData(p.sprite);
 		MassData m=new MassData();
-		m.mass=500;
+		m.mass=1;
 		p.body.setMassData(m);
 		p.body.createFixture(p.fixtureDef);
 		return p;
@@ -339,7 +371,7 @@ public class GameController implements Screen{
 		i.body=world.createBody(i.bodyDef);
 		i.body.setUserData(i.sprite);
 		MassData m=new MassData();
-		m.mass=500;
+		m.mass=50000;
 		i.body.setMassData(m);
 		i.body.createFixture(i.fixtureDef);
 		return i;

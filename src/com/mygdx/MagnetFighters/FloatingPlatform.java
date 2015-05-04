@@ -60,6 +60,8 @@ public class FloatingPlatform
 			friction=Constants.COMPLAB_FRICTION;
 		if (Constants.stage==2)
 			friction=Constants.TESTTUBE_FRICTION;
+		if (Constants.stage==3)
+			friction=Constants.BANDSAW_FRICTION;
 		fixtureDef.friction=friction;
 		sprite.setPosition(bodyDef.position.x*Constants.PIXELS_TO_METERS-sprite.getWidth()/2, bodyDef.position.y*Constants.PIXELS_TO_METERS-sprite.getHeight()/2);
 	}
@@ -72,7 +74,7 @@ public class FloatingPlatform
 		else
 			s.set(new float[]
 					{
-					vertices[0]+0.01f,vertices[1]+0.05f,vertices[2]-0.01f,vertices[3]+0.05f,vertices[2],vertices[3]-0.05f,vertices[0],vertices[1]-0.05f
+					vertices[0],vertices[1]+0.05f,vertices[2],vertices[3]+0.05f,vertices[2],vertices[3],vertices[0],vertices[1]
 					});
 		fixtureDef.shape=s;
         fixtureDef.filter.categoryBits = Constants.WORLD_ENTITY;

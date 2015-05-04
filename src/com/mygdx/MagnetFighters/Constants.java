@@ -18,8 +18,10 @@ public class Constants
 	final static float JUMP_SOUND_LENGTH=0.2f;
 	final static float ITEM_SOUND_LENGTH=0.35f;
 	final static float IMPACT_SOUND_LENGTH=0.4f;
-	final static boolean DEBUG=true;
+	final static float LIFE_SOUND_LENGTH=0.6f;
+	final static boolean DEBUG=false;
 	final static float COMPLAB_FRICTION=0.5f;
 	final static float TESTTUBE_FRICTION=1f;
-	static int stage=1;
+	final static float BANDSAW_FRICTION=1f;
+	static int stage=2;
 }

@@ -29,7 +29,7 @@ public class Player
 	final float INITX=20f;
 	final float INITY=500f;
 	final float XVELOCITY=3f;
-	final float YVELOCITY=7f;
+	final float YVELOCITY=7.5f;
 	final float FALLSPEED=1f;
 	final int INITIAL_SPRITE_INDEX=6;
 	final int JUMP_SPRITE_INDEX=3;
@@ -96,6 +96,14 @@ public class Player
 				sprite.setPosition(-100,Gdx.graphics.getHeight()*2);
 			if (rand==3)
 				sprite.setPosition(480,Gdx.graphics.getHeight()*2);
+		}
+		if (Constants.stage==3)
+		{
+			int rand=(int)(Math.random()*2);
+			if (rand==0)
+				sprite.setPosition((float)Math.random()*(Gdx.graphics.getWidth()/2+Assets.bandsawSpawn[0])-Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()*2);
+			else
+				sprite.setPosition((float)Math.random()*(Gdx.graphics.getWidth()/2-Assets.bandsawSpawn[1])+Assets.bandsawSpawn[1], Gdx.graphics.getHeight()*2);
 		}
 		bodyDef=new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;

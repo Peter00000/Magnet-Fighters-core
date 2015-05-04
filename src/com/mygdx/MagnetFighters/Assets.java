@@ -36,32 +36,32 @@ public class Assets
 	//Floating platforms
 	static final FloatingPlatform[] complabPlatforms=
 		{
-		new FloatingPlatform(platformTexture,-675*Constants.ADJUSTED_WIDTH,-175*Constants.ADJUSTED_HEIGHT,2000*Constants.ADJUSTED_WIDTH,80*Constants.ADJUSTED_HEIGHT)
+			new FloatingPlatform(platformTexture,-675*Constants.ADJUSTED_WIDTH,-175*Constants.ADJUSTED_HEIGHT,2030*Constants.ADJUSTED_WIDTH,80*Constants.ADJUSTED_HEIGHT)
 		};
 
 	static final FloatingPlatform[] testtubePlatforms=
 		{
 		new FloatingPlatform(platformTexture,-770,145,
 				new float[]
-				{
+						{
 				0f,0f, 
 				2.3f,-0.2f,
 				1f,-10f,
 				-0.8f,-10f
-							}),
+						}),
 
 		new FloatingPlatform(platformTexture,-435,120,
 				new float[]
-				{
+						{
 				0f,0f, 
 				2.1f,0.3f,
 				5f,-10f,
 				3f,-10f
 						}),
-						
+
 		new FloatingPlatform(platformTexture,-118,107,
 				new float[]
-				{
+						{
 				0f,0f, 
 				2.1f,0.3f,
 				5f,-10f,
@@ -69,28 +69,45 @@ public class Assets
 						}),
 		new FloatingPlatform(platformTexture,460,70,
 				new float[]
-				{
+						{
 				0f,0f, 
 				1.8f,0.4f,
 				6f,-10f,
 				4f,-10f
 						}),
 		};
-	{
-		for (int i=0;i<testtubePlatforms.length;i++)
-			testtubePlatforms[i].friction=1f;
-	}
 
+	static final FloatingPlatform[] bandsawPlatforms=
+		{
+		new FloatingPlatform(platformTexture,-1500,135,
+				new float[]
+						{
+				0f,0f, 
+				16.2f,0.1f,
+				16.2f,-0.4f,
+				0f,-0.5f
+						}),
+
+		new FloatingPlatform(platformTexture,217,-100,
+				new float[]
+						{
+				0f,0f, 
+				11.2f,0.05f,
+				11.2f,-0.41f,
+				-0.05f,-0.41f
+						}),
+		};
 
 	//Weapon settings
 	static float weaponSize=45f;
 
 	//Item settings
 	static float initItems=0;
-	
+
 	static float labSpawn=-Gdx.graphics.getWidth()/2;
-	
+
 	static float[] tubeSpawn={-700f,-400f,-100f,480f};
-	
+
+	static float[] bandsawSpawn={140f,230f};
 
 }
