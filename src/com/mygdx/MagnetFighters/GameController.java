@@ -1,5 +1,11 @@
 package com.mygdx.MagnetFighters;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -13,9 +19,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 
 public class GameController implements Screen{
 
@@ -25,114 +33,116 @@ public class GameController implements Screen{
 	BitmapFont font;
 	OrthographicCamera camera;
 	Matrix4 DebugMatrix;
-	
-	
 	MagnetFighters game;
+
 	/*Game indicator booleans*/
-	final boolean DEBUG=false;
-	final boolean FLOOR=false;
 	boolean gameState=true;
-	
+
 	/*Renderers*/
 	Box2DDebugRenderer boxDebugRender;
-	private Box2DDebugRenderer debugRenderer;
 	ShapeRenderer shapeRenderer;
-	
+
 	/*Game constants*/
-	private static int frameRows=2;
-	private static int frameCols=8;
-	final float PIXELS_TO_METERS = 100f;
-	final float GRAVITY=-9.8f;
-	final float STEP=1/40f;
-	
-	/*Player and platforms (need to be importable in the future)*/
+	final int ADJUSTED_WIDTH=Gdx.graphics.getWidth()/1920;
+	final int ADJUSTED_HEIGHT=Gdx.graphics.getWidth()/1080;
+
+	/*Player and platform fields*/
 	Player player1,player2;
-	EdgePlatform floor,platform1,platform2;
-	FloatingPlatform platform3;
+	EdgePlatform floor,leftedge,rightedge;
 	FloatingPlatform[] platforms;
-<<<<<<< HEAD
-	final boolean FLOOR=false; 
-=======
-	
+	ArrayList<Projectile> projectiles;
+	ArrayList<Item>items;
+
+
 	/*Texture, sound, background and other retributes*/
 	Texture background;
->>>>>>> origin/master
 	Texture winScreen;
-	
+
 	/*The default constructor*/
 	public GameController(final MagnetFighters g) 
 	{
-<<<<<<< HEAD
-		super();		
-=======
-		/*Game initialization*/
 		super();
->>>>>>> origin/master
 		game=g;
+		importAssets();
+
+	}
+	public void importAssets()
+	{
+		/*Game initialization*/
 		batch = new SpriteBatch();
-		world = new World(new Vector2(0, GRAVITY), true);
-		
-		/*Import textures*/
-		Texture walkSheet	=new Texture(Gdx.files.internal("human.png"));
-		Texture walkSheet2	=new Texture(Gdx.files.internal("human2.png"));
-		Texture attackSheet	=new Texture(Gdx.files.internal("human_kick_calc.png"));
-		Texture attackSheet2	=new Texture(Gdx.files.internal("human_kick_calc2.png"));
-		background		=new Texture(Gdx.files.internal("background2.jpg"));
-		Texture platformTexture	=new Texture(Gdx.files.internal("platformcomp.jpg"));
-		winScreen		=new Texture(Gdx.files.internal("You Win.png"));
-		
-		/*Initialize player properties*/
-		player1=new Player(walkSheet,attackSheet,frameRows,frameCols);
-		player1.attackSheet=attackSheet;
+		world = new World(new Vector2(0, Constants.GRAVITY), true);
+		if (Constants.stage==1)
+			background=Assets.computerlab;
+		if (Constants.stage==2)
+			background=Assets.testtubes;
+		winScreen=Assets.winscreen;
+		Texture walkSheet=Assets.player1walk;
+		Texture attackSheet=Assets.player1attack;
+		player1=new Player(walkSheet,attackSheet,Constants.FRAMEROWS,Constants.FRAMECOLS);
 		player1=preparePlayer(player1);
 		player1.color=Color.WHITE;
-		
-		player2=new Player(walkSheet2,attackSheet2,frameRows,frameCols);
+		Texture walkSheet2=Assets.player2walk;
+		Texture attackSheet2=Assets.player2attack;
+		player2=new Player(walkSheet2,attackSheet2,Constants.FRAMEROWS,Constants.FRAMECOLS);
 		player2=preparePlayer(player2);
 		player2.color=Color.WHITE;
-		Player[]players={player1,player2};
-		
-		/*Setting up the platforms*/
-		float w = Gdx.graphics.getWidth()/PIXELS_TO_METERS;
-		float h = (Gdx.graphics.getHeight()/2)/PIXELS_TO_METERS;
-		floor	= new EdgePlatform(-w*100,-h,w*100,-h,0,0,0.05f);
-		if (FLOOR)	floor=preparePlatform(floor);
-		
-		platform1=new EdgePlatform(-w/2,-h*100,-w/2,h*100,0,0,0f);
-	//	platform1=preparePlatform(platform1);
-		platform2=new EdgePlatform(w/2,-h*100,w/2,h*100,0,0,0f);
-	//	platform2=preparePlatform(platform2);
-		platform3=new FloatingPlatform(platformTexture,-650*Gdx.graphics.getWidth()/1920,-175*Gdx.graphics.getHeight()/1080,2000*Gdx.graphics.getWidth()/1920,80*Gdx.graphics.getHeight()/1080);
-		platform3=prepareFloatingPlatform(platform3);
-		
-		EdgePlatform[]edges={floor};
-		FloatingPlatform[] temp={platform3};
-		platforms=temp;
-		
+		if (Assets.floor_enabled)
+		{
+			floor=Assets.floor;
+			floor=preparePlatform(floor);
+		}
+		if (Assets.leftedge_enabled)
+		{
+			leftedge=Assets.leftedge;
+			leftedge=preparePlatform(leftedge);
+		}
+		if (Assets.rightedge_enabled)
+		{
+			rightedge=Assets.rightedge;
+			rightedge=preparePlatform(rightedge);
+		}
+		if (Constants.stage==1)
+			platforms=Assets.complabPlatforms;
+		if (Constants.stage==2)
+			platforms=Assets.testtubePlatforms;
+		for (int i=0;i<platforms.length;i++)
+			platforms[i]=prepareFloatingPlatform(platforms[i]);
+		projectiles=new ArrayList<Projectile>();
+		items=new ArrayList<Item>();
+		for (int i=0;i<Assets.initItems;i++)
+		{
+			if (Constants.stage==1)
+			{
+				items.add(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
+				items.add(new Item(Assets.gradeTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,40,40,2));
+			}
+			else
+			{
+				items.add(new Item(Assets.calculatorTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,30,70,1));
+				items.add(new Item(Assets.gradeTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,40,40,2));
+			}
+		}
+		for (int i=0;i<items.size();i++)
+			prepareItem(items.get(i));
 		/*Windows and world setting*/
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		CollisionDetector c=new CollisionDetector();
-			c.edges=edges; 
-			c.platforms=platforms; 
-			c.players=players;
+		Player[]players={player1,player2};
+		EdgePlatform[]edges={floor,leftedge,rightedge};
+		c.edges=edges; 
+		c.platforms=platforms; 
+		c.players=players;
+		c.projectiles=projectiles;
+		c.items=items;
 		world.setContactListener(c);
 		boxDebugRender = new Box2DDebugRenderer();
 		shapeRenderer=new ShapeRenderer();
-		
-		/*Fonts setting*/
-		font=new BitmapFont();
-		font.setScale(10f);
-	}
+	} 
 
 	@Override
 	public void render (float delta) 
 	{
-		//		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
-		//		{
-		//			this.dispose();
-		//			System.exit(0);
-		//		}
-		
+
 		//Key 9-8-7 combo to reset the game
 		if (Gdx.input.isKeyPressed(Keys.NUM_9))
 			if (Gdx.input.isKeyPressed(Keys.NUM_8))
@@ -144,7 +154,7 @@ public class GameController implements Screen{
 					game.sounds.playMusic(6);
 					resetGame();
 				}
-		
+
 		//Key 6-5 to reset the game with random music
 		if (Gdx.input.isKeyPressed(Keys.NUM_6))
 			if (Gdx.input.isKeyPressed(Keys.NUM_5))
@@ -176,29 +186,31 @@ public class GameController implements Screen{
 				winMessage(player2);
 			return;
 		}
-
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		Gdx.gl.glClearColor(0.5f, 0.5f, 0.8f, 0f);
-		world.step(STEP, 6, 2);
+		world.step(Constants.STEP, 6, 2);
 		player1.updatePosition();
 		batch.setProjectionMatrix(camera.combined);
-		DebugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS, PIXELS_TO_METERS, 0);
+		DebugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PIXELS_TO_METERS, Constants.PIXELS_TO_METERS, 0);
 		batch.begin();
 		batch.setColor(Color.WHITE);
 		batch.draw(background,-Gdx.graphics.getWidth()/2,-Gdx.graphics.getHeight()/2,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		if (player1.checkKick&&player2.checkKick)
+		if (player1.contact&&player2.contact)
 		{
 			kickPlayers();
 		}
-		controlPlayer(player1,Keys.UP,Keys.DOWN,Keys.RIGHT,Keys.LEFT,Keys.SHIFT_RIGHT);
-		controlPlayer(player2,Keys.W,Keys.S,Keys.D,Keys.A,Keys.NUM_1 );
+		controlPlayer(player1,Keys.UP,Keys.DOWN,Keys.RIGHT,Keys.LEFT,Keys.SHIFT_RIGHT,Keys.SLASH);
+		controlPlayer(player2,Keys.W,Keys.S,Keys.D,Keys.A,Keys.NUM_1,Keys.NUM_2);
+		controlProjectiles();
+		controlItems();
 		batch.end();
-		if (DEBUG)
+		if (Constants.DEBUG)
 			boxDebugRender.render(world, DebugMatrix);
 		renderHealthBars(player1);
 		renderHealthBars(player2);
-		camera.update();
+		controlCamera();
 	}
+
 
 	//Set the player attributes
 	public Player preparePlayer(Player player)
@@ -213,6 +225,124 @@ public class GameController implements Screen{
 		player.setContactFixture();
 		player.contactFixture=player.body.createFixture(player.fixtureDef);
 		return player;
+	}
+
+	public void controlProjectiles()
+	{
+		if (projectiles.isEmpty())
+			return;
+		for (int i=0;i<projectiles.size();i++)
+		{
+			if (projectiles.get(i).dead)
+				continue;
+			if (projectiles.get(i).destroy)
+			{
+				destroyItem(projectiles.get(i));
+				game.sounds.playSound(4, 0,Constants.IMPACT_SOUND_LENGTH);
+				continue;
+			}
+			projectiles.get(i).sprite.setPosition((projectiles.get(i).body.getPosition().x * Constants.PIXELS_TO_METERS) - projectiles.get(i).sprite.getWidth()/2,(projectiles.get(i).body.getPosition().y * Constants.PIXELS_TO_METERS) -projectiles.get(i).sprite.getHeight()/2);
+			projectiles.get(i).sprite.setOrigin(projectiles.get(i).sprite.getWidth()/2, projectiles.get(i).sprite.getHeight()/2);
+			projectiles.get(i).sprite.setRotation((projectiles.get(i).body.getAngle() * MathUtils.radiansToDegrees)%360);
+			projectiles.get(i).sprite.setOriginCenter();
+			projectiles.get(i).sprite.draw(batch);
+		}
+	}
+
+	public void controlItems()
+	{
+		if (items.size()<=2)
+		{
+			double rand=Math.random();
+			if (rand<0.001)
+			{
+				spawnItem(1);
+			}
+			if (rand>0.9990)
+			{
+				spawnItem(2);
+			}
+			System.out.println(rand);
+		}
+		for (int i=0;i<items.size();i++)
+		{
+			if (items.get(i).dead)
+				continue;
+			if (items.get(i).destroy)
+			{
+				items.get(i).dead=true;
+				world.destroyBody(items.get(i).body);
+				game.sounds.playSound(3, 0,Constants.ITEM_SOUND_LENGTH);
+				items.remove(i);
+				continue;
+			}
+			items.get(i).sprite.setPosition((items.get(i).body.getPosition().x * Constants.PIXELS_TO_METERS) - items.get(i).sprite.getWidth()/2,(items.get(i).body.getPosition().y * Constants.PIXELS_TO_METERS) -items.get(i).sprite.getHeight()/2);
+			items.get(i).sprite.setOrigin(items.get(i).sprite.getWidth()/2, items.get(i).sprite.getHeight()/2);
+			items.get(i).sprite.setRotation((items.get(i).body.getAngle() * MathUtils.radiansToDegrees)%360);
+			items.get(i).sprite.setOriginCenter();
+			items.get(i).sprite.draw(batch);
+		}
+	}
+
+	public void spawnItem(int id)
+	{
+		Item i = null;
+		if (Constants.stage==1)
+		{
+			if (id==1)
+				i=(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
+			if (id==2)
+				i=(new Item(Assets.gradeTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,40,40,2));
+		}
+		if (Constants.stage==2)
+		{
+			if (id==1)
+				i=(new Item(Assets.calculatorTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,30,70,1));
+			if (id==2)
+				i=(new Item(Assets.gradeTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,40,40,2));
+		}
+		i=prepareItem(i);
+		items.add(i);
+	}
+
+	public Projectile prepareProjectile(Projectile p)
+	{
+		p.create();
+		p.body=world.createBody(p.bodyDef);
+		p.body.setUserData(p.sprite);
+		MassData m=new MassData();
+		m.mass=500;
+		p.body.setMassData(m);
+		p.body.createFixture(p.fixtureDef);
+		return p;
+	}
+
+	public Projectile defaultProjectile()
+	{
+		return new Projectile(Assets.weapon,(float)(-Math.random()*Gdx.graphics.getWidth()/2),400f,Assets.weaponSize,Assets.weaponSize,2);
+	}
+
+	public void createItem(int num)
+	{
+		if (num==1)
+		{
+			if (Constants.stage==1)
+				items.add(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
+			if (Constants.stage==2)
+				items.add(new Item(Assets.calculatorTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,30,70,1));
+		}
+	}
+
+	public Item prepareItem(Item i)
+	{
+		i.create();
+		i.body=world.createBody(i.bodyDef);
+		i.body.setUserData(i.sprite);
+		MassData m=new MassData();
+		m.mass=500;
+		i.body.setMassData(m);
+		i.body.createFixture(i.fixtureDef);
+		return i;
 	}
 
 	public EdgePlatform preparePlatform(EdgePlatform platform)
@@ -240,6 +370,7 @@ public class GameController implements Screen{
 
 	public void renderHealthBars(Player player)
 	{
+		float length=player.health;
 		shapeRenderer.begin(ShapeType.Filled);
 		if (player.health>70)
 			shapeRenderer.setColor(Color.GREEN);
@@ -250,11 +381,22 @@ public class GameController implements Screen{
 
 		if (player.kickColor)
 			shapeRenderer.setColor(Color.BLUE);
-		if (player.flipped)
-			shapeRenderer.rect(player.sprite.getX()+player.health+Gdx.graphics.getWidth()/2, player.sprite.getY()+Gdx.graphics.getHeight()/2+100f, -player.health, 10);
+		if (player.calculatorAttack)
+		{
+			shapeRenderer.setColor(Color.LIGHT_GRAY);
+			length=player.calculatorDuration;
+		}
+		if (player.facingLeft)
+			shapeRenderer.rect(player.sprite.getX()+length+Gdx.graphics.getWidth()/2, player.sprite.getY()+Gdx.graphics.getHeight()/2+100f, -length, 10);
 		else
-			shapeRenderer.rect(player.sprite.getX()+Gdx.graphics.getWidth()/2, player.sprite.getY()+Gdx.graphics.getHeight()/2+100f, player.health, 10);
+			shapeRenderer.rect(player.sprite.getX()+Gdx.graphics.getWidth()/2, player.sprite.getY()+Gdx.graphics.getHeight()/2+100f, length, 10);
 		shapeRenderer.end();
+		batch.begin();
+		if (player.calculatorEquipped&&!player.calculatorAttack)
+		{
+			batch.draw(Assets.calculatorTexture, player.sprite.getX(),player.sprite.getY()+player.sprite.getHeight()-10f,15,25);
+		}
+		batch.end();
 	}
 
 	public void kickPlayers()
@@ -275,7 +417,7 @@ public class GameController implements Screen{
 				player1.getKicked(player2.sprite.getX()>player1.sprite.getX(),1f,true);
 				player2.getKicked(player2.sprite.getX()<player1.sprite.getX(),0.2f,false);
 				player2.kickAttack=false;
-				game.sounds.playSound(0, 0);
+				game.sounds.playSound(0, 0,Constants.PUNCH_SOUND_LENGTH);
 			}
 		}
 
@@ -286,12 +428,44 @@ public class GameController implements Screen{
 				player2.getKicked(player1.sprite.getX()>player2.sprite.getX(),1f,true);
 				player1.getKicked(player1.sprite.getX()<player2.sprite.getX(),0.2f,false);
 				player1.kickAttack=false;
-				game.sounds.playSound(0, 0);
+				game.sounds.playSound(0, 0,Constants.PUNCH_SOUND_LENGTH);
 			}
 		}
 	}
-	public void controlPlayer(Player player, int up,int down,int right,int left,int kick)
+	public void controlPlayer(Player player, int up,int down,int right,int left,int kick,int special)
 	{
+		if (Gdx.input.isKeyPressed(special)&&player.calculatorEquipped&&!player.isKicked)
+		{
+			player.calculatorAttack=true;
+			player.calculatorDuration-=0.5f;
+			player.stayStationary();
+			drawPlayer(player);
+			if (player.calculatorDuration<=0f)
+			{
+				player.calculatorEquipped=false;
+			}
+			if (player.calculatorDuration%20==5)
+			{
+				projectiles.add(defaultProjectile());
+				if (player.facingLeft)
+				{
+					projectiles.get(projectiles.size()-1).setPosition(player.sprite.getX()-player.sprite.getWidth(), player.sprite.getY()+player.sprite.getHeight()/2);
+					prepareProjectile(projectiles.get(projectiles.size()-1));
+					projectiles.get(projectiles.size()-1).launch(!player.facingLeft, 1f);
+					game.sounds.playSound(2, 0, 0.3f);
+				}
+				else
+				{
+					projectiles.get(projectiles.size()-1).setPosition(player.sprite.getX()+player.sprite.getWidth(), player.sprite.getY()+player.sprite.getHeight()/2);
+					prepareProjectile(projectiles.get(projectiles.size()-1));
+					projectiles.get(projectiles.size()-1).launch(!player.facingLeft, 1f);
+					game.sounds.playSound(2, 0, 0.2f);
+				}
+			}
+			return;
+		}
+		else
+			player.calculatorAttack=false;
 		if (player.isKicked)
 			player.invincibility++;
 		if (player.invincibility>20)
@@ -303,11 +477,11 @@ public class GameController implements Screen{
 		if (player.sprite.getY()<(-Gdx.graphics.getHeight()/2-100)||player.sprite.getX()<(-Gdx.graphics.getWidth()/2-300))
 			player.health=0;
 		batch.setColor(player.color);
-		if (Gdx.input.isKeyPressed(up)&&!player.isKicked)
+		if (Gdx.input.isKeyPressed(up)&&!player.isKicked&&!player.lockPlayerRight)
 		{
 			if (!player.isJumping)
 			{
-				game.sounds.playSound(1,0);
+				game.sounds.playSound(1,0,Constants.JUMP_SOUND_LENGTH);
 			}
 			player.jump();
 		}
@@ -338,22 +512,34 @@ public class GameController implements Screen{
 			player.kick=true;
 			player.kickAttack=true;
 		}
-		if (Gdx.input.isKeyPressed(right)&&!player.isKicked)
+		if (Gdx.input.isKeyPressed(right)&&!player.isKicked&&!player.lockPlayerRight)
 		{
 			player.moveRight();
 		}
-		else if (Gdx.input.isKeyPressed(left)&&!player.isKicked)
+		else if (Gdx.input.isKeyPressed(left)&&!player.isKicked&&!player.lockPlayerLeft)
 		{
 			player.moveLeft();
-		}
-		else
+		}	
+		else 
 		{
 			player.stayStationary();
 		}
-		if (player.flipped)
+		drawPlayer(player);
+	}
+
+	public void drawPlayer(Player player)
+	{
+		player.sprite.rotate(90);
+		if (player.facingLeft)
 			batch.draw(player.sprite,player.sprite.getX()+100,player.sprite.getY(),-100,100);
 		else
 			batch.draw(player.sprite,player.sprite.getX(),player.sprite.getY(),100,100);
+	}
+
+	public void destroyItem(Item i)
+	{
+		i.dead=true;
+		world.destroyBody(i.body);
 	}
 
 	public void winMessage(Player winner)
@@ -366,15 +552,15 @@ public class GameController implements Screen{
 		batch.end();
 	}
 
+	public void controlCamera()
+	{
+		camera.update();
+	}
+
 	public void resetGame()
 	{		
-		player1.body.setTransform((float)(-Math.random()*Gdx.graphics.getWidth()/2)/PIXELS_TO_METERS, Gdx.graphics.getHeight()/PIXELS_TO_METERS, 0);
-		player2.body.setTransform((float)(-Math.random()*Gdx.graphics.getWidth()/2)/PIXELS_TO_METERS, Gdx.graphics.getHeight()/PIXELS_TO_METERS, 0);
-		player1.body.setLinearVelocity(0.001f,0f);
-		player2.body.setLinearVelocity(0.001f,0f);
-		player1.isKicked=false;player2.isKicked=false;player1.kickColor=false;player2.kickColor=false;
-		player1.health=100f;
-		player2.health=100f;
+		this.dispose();
+		importAssets();
 		gameState=true;
 	}
 

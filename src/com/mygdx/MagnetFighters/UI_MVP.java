@@ -1,5 +1,11 @@
 package com.mygdx.MagnetFighters;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -59,8 +65,8 @@ public class UI_MVP implements Screen {
 
 		//Initialize sounds
 		//Import textures
-		background = new Texture(Gdx.files.internal("Logo Screen.png"));
-		backgroundImg = new Image(background);
+
+		initializeBackground();
 		stage.addActor(backgroundImg);
 
 		//Configure the buttons
@@ -103,6 +109,13 @@ public class UI_MVP implements Screen {
 
 	}
 
+	public void initializeBackground()
+	{
+		background = Assets.menu;
+		backgroundImg = new Image(background);
+		stage.addActor(backgroundImg);
+	}
+
 	@Override
 	public void render(float delta) {
 		Color buttonColor;
@@ -110,7 +123,7 @@ public class UI_MVP implements Screen {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		if (Gdx.input.isKeyJustPressed(Keys.SPACE))
 			gameState=0;
-		
+
 		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
 		{
 			game.sounds.terminate();
@@ -171,7 +184,7 @@ public class UI_MVP implements Screen {
 	@Override
 	public void hide() 
 	{
-		
+
 	}
 
 }

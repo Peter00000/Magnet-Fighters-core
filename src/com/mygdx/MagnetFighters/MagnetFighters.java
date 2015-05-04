@@ -4,7 +4,6 @@ import com.badlogic.gdx.Game;
 
 public class MagnetFighters extends Game
 {
-
 	GameController g;
 	UI_MVP ui;
 	SoundEngine sounds;
@@ -16,8 +15,9 @@ public class MagnetFighters extends Game
 		g=new GameController(this);
 		this.setScreen(ui);
 		sounds=new SoundEngine();
+		sounds.setMusicVolume(0.3f);
 		sounds.playMusic(6);
-		sounds.setSoundVolume(1f);
+		sounds.setSoundVolume(0.8f);
 	}
 	
 }

@@ -7,17 +7,17 @@ import com.badlogic.gdx.physics.box2d.*;
 
 public class FloatingPlatform
 {
-	final float PIXELS_TO_METERS = 100f;
-	float friction=0.1f;
+	float friction;
 	Texture image;
 	Sprite sprite;
 	Body body;
 	BodyDef bodyDef;
 	FixtureDef fixtureDef;
-    final short PHYSICS_ENTITY = 0x1;    // 0001
-    final short WORLD_ENTITY = 0x1 << 1; // 0010 or 0x2 in hex
     float posX,posY,width,height;
     Fixture contactFixture;
+    PolygonShape shape;
+    boolean isBox;
+    float[] vertices;
 
 	public FloatingPlatform(Texture im, float x, float y, float w, float h)
 	{
@@ -26,6 +26,24 @@ public class FloatingPlatform
 	    posY=y;
 	    width=w;
 	    height=h;
+		World temp=new World(new Vector2(0f,0f),false);
+		temp.dispose();
+		shape=new PolygonShape();
+		shape.setAsBox(width/Constants.PIXELS_TO_METERS/2, height/Constants.PIXELS_TO_METERS/2);
+		isBox=true;
+	}
+	
+	public FloatingPlatform(Texture im, float x, float y, float[]v)
+	{
+		image=im;
+	    posX=x;
+	    posY=y;
+		World temp=new World(new Vector2(0f,0f),false);
+		temp.dispose();
+		shape=new PolygonShape();
+		shape.set(v);
+		isBox=false;
+		vertices=v;
 	}
 	
 	public void createFloatingPlatform()
@@ -35,22 +53,30 @@ public class FloatingPlatform
 		sprite=new Sprite(image,(int)width,(int)height);
 		bodyDef=new BodyDef();
 		bodyDef.type = BodyDef.BodyType.StaticBody;
-		bodyDef.position.set(new Vector2(posX/PIXELS_TO_METERS,posY/PIXELS_TO_METERS));
+		bodyDef.position.set(new Vector2(posX/Constants.PIXELS_TO_METERS,posY/Constants.PIXELS_TO_METERS));
 		fixtureDef = new FixtureDef();
-		PolygonShape shape=new PolygonShape();
-		shape.setAsBox(width/PIXELS_TO_METERS/2, height/PIXELS_TO_METERS/2);
 		fixtureDef.shape=shape;
-		fixtureDef.friction=0f;
-		sprite.setPosition(bodyDef.position.x*PIXELS_TO_METERS-sprite.getWidth()/2, bodyDef.position.y*PIXELS_TO_METERS-sprite.getHeight()/2);
+		if (Constants.stage==1)
+			friction=Constants.COMPLAB_FRICTION;
+		if (Constants.stage==2)
+			friction=Constants.TESTTUBE_FRICTION;
+		fixtureDef.friction=friction;
+		sprite.setPosition(bodyDef.position.x*Constants.PIXELS_TO_METERS-sprite.getWidth()/2, bodyDef.position.y*Constants.PIXELS_TO_METERS-sprite.getHeight()/2);
 	}
 	
 	public void setContactFixture()
 	{
-		PolygonShape shape=new PolygonShape();
-		shape.setAsBox(width/PIXELS_TO_METERS/2-0.05f, 0.01f,new Vector2(body.getLocalCenter().x,body.getLocalCenter().y+height/2/PIXELS_TO_METERS+0.01f),0f);
-		fixtureDef.shape=shape;
-        fixtureDef.filter.categoryBits = WORLD_ENTITY;
-        fixtureDef.filter.maskBits = PHYSICS_ENTITY;
+		PolygonShape s=new PolygonShape();
+		if (isBox)
+			s.setAsBox(width/Constants.PIXELS_TO_METERS/2-0.05f, 0.01f,new Vector2(body.getLocalCenter().x,body.getLocalCenter().y+height/2/Constants.PIXELS_TO_METERS+0.01f),0f);
+		else
+			s.set(new float[]
+					{
+					vertices[0]+0.01f,vertices[1]+0.05f,vertices[2]-0.01f,vertices[3]+0.05f,vertices[2],vertices[3]-0.05f,vertices[0],vertices[1]-0.05f
+					});
+		fixtureDef.shape=s;
+        fixtureDef.filter.categoryBits = Constants.WORLD_ENTITY;
+        fixtureDef.filter.maskBits = Constants.PHYSICS_ENTITY;
 		fixtureDef.friction=friction;
 	}
 }

@@ -20,7 +20,7 @@ public class SoundEngine {
 
 	};
 	private String[] soundFiles = {
-			"kickSound.wav","jump.wav","bang.wav"
+			"kickSound.wav","jump.wav","shot.wav","laser.wav","impact.wav"
 	};
 	private Music[] musics = new Music[musicFiles.length];
 	private Sound[] sounds= new Sound[soundFiles.length];
@@ -61,7 +61,7 @@ public class SoundEngine {
 
 
 	//The method plays the designated sound effect
-	public void playSound(final int index, float pan){
+	public void playSound(final int index, float pan, float soundDuration){
 		if(index < sounds.length)
 			soundID = sounds[index].loop(soundVolume, 1f, 0);
 		else return;
@@ -70,7 +70,7 @@ public class SoundEngine {
 			public void run() {
 				sounds[index].stop();
 				}}
-		, 0.2f);
+		, soundDuration);
 
 	}
 

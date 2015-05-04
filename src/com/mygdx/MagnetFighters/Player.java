@@ -14,7 +14,7 @@ public class Player
 	TextureRegion[] walkFrames;
 	TextureRegion[] attackFrames;
 	TextureRegion currentFrame;
-	boolean flipped;
+	boolean facingLeft;
 	Body body;
 	BodyDef bodyDef;
 	FixtureDef fixtureDef;
@@ -24,7 +24,6 @@ public class Player
 	int frameRows;
 	int frameCols;
 	Animation walkAnimation;
-	final float PIXELS_TO_METERS=100f;
 	boolean isJumping;
 	float stateTime;
 	final float INITX=20f;
@@ -36,19 +35,22 @@ public class Player
 	final int JUMP_SPRITE_INDEX=3;
 	final float MASS=80f;
 	Color color;
-	final short PHYSICS_ENTITY = 0x1;    // 0001
-	final short WORLD_ENTITY = 0x1 << 1; // 0010 or 0x2 in hex
 	Fixture contactFixture;
 	int numFootContacts;
 	boolean kick=false;
 	int kick_iterator=0;
-	boolean checkKick=false;
+	boolean contact=false;
 	boolean isKicked=false;
 	boolean kickAttack=false;
 	FixtureDef box;
-	float health=100f;
+	float health=Constants.INITIAL_HEALTH;
 	float invincibility;
 	boolean kickColor=false;
+	boolean calculatorEquipped=false;
+	boolean calculatorAttack;
+	float calculatorDuration=100f;
+	boolean lockPlayerRight=false;
+	boolean lockPlayerLeft=false;
 
 
 	public Player(Texture sheet,Texture attack, int rows, int cols)
@@ -81,22 +83,35 @@ public class Player
 		}
 		walkAnimation = new Animation(0.025f, walkFrames);
 		sprite=new Sprite(walkFrames[INITIAL_SPRITE_INDEX]);
-		sprite.setPosition(-(float)Math.random()*Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()*2);
+		if (Constants.stage==1)
+			sprite.setPosition(-(float)Math.random()*Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()*2);
+		if (Constants.stage==2)
+		{
+			int rand=(int)(Math.random()*4);
+			if (rand==0)
+				sprite.setPosition(-700, Gdx.graphics.getHeight()*2);
+			if (rand==1)
+				sprite.setPosition(-400,Gdx.graphics.getHeight()*2);
+			if (rand==2)
+				sprite.setPosition(-100,Gdx.graphics.getHeight()*2);
+			if (rand==3)
+				sprite.setPosition(480,Gdx.graphics.getHeight()*2);
+		}
 		bodyDef=new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
 		bodyDef.fixedRotation=true;
-		bodyDef.position.set((sprite.getX() + sprite.getWidth()/2)/PIXELS_TO_METERS,(sprite.getY()) / PIXELS_TO_METERS);
+		bodyDef.position.set((sprite.getX() + sprite.getWidth()/2)/Constants.PIXELS_TO_METERS,(sprite.getY()) / Constants.PIXELS_TO_METERS);
 		PolygonShape shape = new PolygonShape();
-		shape.setAsBox((sprite.getWidth()/2-20)/ PIXELS_TO_METERS, (sprite.getHeight()
-				/2-20)/ PIXELS_TO_METERS);		
+		shape.setAsBox((sprite.getWidth()/2-20)/ Constants.PIXELS_TO_METERS, (sprite.getHeight()
+				/2-20)/ Constants.PIXELS_TO_METERS);		
 		fixtureDef=new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.density = DENSITY;
 		fixtureDef.restitution=RESTITUTION;
 		fixtureDef.friction=FRICTION;
 		stateTime=0f;
-		fixtureDef.filter.categoryBits = PHYSICS_ENTITY;
-		fixtureDef.filter.maskBits = PHYSICS_ENTITY|WORLD_ENTITY;
+		fixtureDef.filter.categoryBits = Constants.PHYSICS_ENTITY;
+		fixtureDef.filter.maskBits = Constants.PHYSICS_ENTITY|Constants.WORLD_ENTITY;
 		box=fixtureDef;
 	}
 
@@ -126,11 +141,11 @@ public class Player
 		if (kick)
 			currentFrame=attackFrames[5];
 		sprite.setRegion(currentFrame);
-		flipped=false;
+		facingLeft=false;
 		body.setLinearVelocity(XVELOCITY,body.getLinearVelocity().y);
-		sprite.setX((int) (body.getPosition().x*PIXELS_TO_METERS));
-		sprite.setY((int) (body.getPosition().y*PIXELS_TO_METERS));
-		sprite.setPosition((body.getPosition().x * PIXELS_TO_METERS) - sprite.getWidth()/2-5,(body.getPosition().y * PIXELS_TO_METERS) -sprite.getHeight()/2+10);
+		sprite.setX((int) (body.getPosition().x*Constants.PIXELS_TO_METERS));
+		sprite.setY((int) (body.getPosition().y*Constants.PIXELS_TO_METERS));
+		sprite.setPosition((body.getPosition().x * Constants.PIXELS_TO_METERS) - sprite.getWidth()/2-5,(body.getPosition().y * Constants.PIXELS_TO_METERS) -sprite.getHeight()/2+10);
 	}
 
 	public void moveLeft()
@@ -145,9 +160,9 @@ public class Player
 		if (kick)
 			currentFrame=attackFrames[5];
 		sprite.setRegion(currentFrame);
-		flipped=true;
+		facingLeft=true;
 		body.setLinearVelocity(-XVELOCITY,body.getLinearVelocity().y);
-		sprite.setPosition((body.getPosition().x * PIXELS_TO_METERS) - sprite.getWidth()/2-5,(body.getPosition().y * PIXELS_TO_METERS) -sprite.getHeight()/2+10);
+		sprite.setPosition((body.getPosition().x * Constants.PIXELS_TO_METERS) - sprite.getWidth()/2-5,(body.getPosition().y * Constants.PIXELS_TO_METERS) -sprite.getHeight()/2+10);
 	}
 
 	public void stayStationary()
@@ -156,14 +171,15 @@ public class Player
 		currentFrame=walkFrames[INITIAL_SPRITE_INDEX];
 		if (kick)
 			currentFrame=attackFrames[5];
-		
-		sprite.setPosition((body.getPosition().x * PIXELS_TO_METERS) - sprite.getWidth()/2-5,(body.getPosition().y * PIXELS_TO_METERS) -sprite.getHeight()/2+10);
+		if (calculatorAttack)
+			currentFrame=attackFrames[12];
+		sprite.setPosition((body.getPosition().x * Constants.PIXELS_TO_METERS) - sprite.getWidth()/2-5,(body.getPosition().y * Constants.PIXELS_TO_METERS) -sprite.getHeight()/2+10);
 		sprite.setRegion(currentFrame);
 	}
 
 	public void updatePosition()
 	{
-		sprite.setPosition((body.getPosition().x * PIXELS_TO_METERS) - sprite.getWidth()/2,(body.getPosition().y * PIXELS_TO_METERS) -sprite.getHeight()/2 );
+		sprite.setPosition((body.getPosition().x * Constants.PIXELS_TO_METERS) - sprite.getWidth()/2,(body.getPosition().y * Constants.PIXELS_TO_METERS) -sprite.getHeight()/2 );
 	}
 
 	public BodyDef getBodyDef()
@@ -179,17 +195,17 @@ public class Player
 	public void setContactFixture()
 	{
 		PolygonShape shape=new PolygonShape();
-		shape.setAsBox((sprite.getWidth()/2)/PIXELS_TO_METERS/2-0.15f, 0.01f,new Vector2(body.getLocalCenter().x,body.getLocalCenter().y+(sprite.getHeight()
-				/2+20)/2/PIXELS_TO_METERS+0.01f),0f);
+		shape.setAsBox((sprite.getWidth()/2)/Constants.PIXELS_TO_METERS/2-0.15f, 0.01f,new Vector2(body.getLocalCenter().x,body.getLocalCenter().y+(sprite.getHeight()
+				/2+20)/2/Constants.PIXELS_TO_METERS+0.01f),0f);
 		fixtureDef.shape=shape;
-		fixtureDef.filter.categoryBits = WORLD_ENTITY;
-		fixtureDef.filter.maskBits = PHYSICS_ENTITY;
+		fixtureDef.filter.categoryBits = Constants.WORLD_ENTITY;
+		fixtureDef.filter.maskBits = Constants.PHYSICS_ENTITY;
 		fixtureDef.friction=FRICTION;
 	}
 
 	public void getKicked(boolean goLeft,float kickPower,boolean kickDamage)
 	{
-		body.setLinearVelocity(new Vector2(0f,body.getLinearVelocity().y));
+		body.setLinearVelocity(new Vector2(0f,0f));
 		if (goLeft)
 			body.applyLinearImpulse(-kickPower,0.4f,body.getPosition().x,body.getPosition().y,true);
 		else
@@ -198,6 +214,8 @@ public class Player
 		{
 			health-=5f;
 			kickColor=true;
+			if (health<0)
+				health=0;
 		}
 		isKicked=true;
 	}
