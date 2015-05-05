@@ -107,12 +107,11 @@ public class CollisionDetector implements ContactListener
 					{
 						if (!projectiles.get(i).dead)
 						{
-							System.out.println("kick");
 							projectiles.get(i).contact=true;
 							if (players[j].facingLeft)
-								players[j].getKicked(true,0.8f,true);
+								players[j].getKicked(true,0.8f,10f);
 							else
-								players[j].getKicked(false,0.8f,true);
+								players[j].getKicked(false,0.8f,10f);
 							projectiles.get(i).contact=false;
 							projectiles.get(i).destroy=true;
 						}
@@ -137,10 +136,11 @@ public class CollisionDetector implements ContactListener
 						if (items.get(i).ID==1)
 						{
 							players[j].calculatorEquipped=true;
-							players[j].calculatorDuration+=100f;
+							players[j].calculatorDuration=100f;
 						}
 						if (items.get(i).ID==2)
 						{
+							players[j].collectHealth=true;
 							players[j].health+=20f;
 							if (players[j].health>100f)
 								players[j].health=100f;

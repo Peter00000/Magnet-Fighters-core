@@ -40,7 +40,7 @@ public class Player
 	boolean kick=false;
 	int kick_iterator=0;
 	boolean contact=false;
-	boolean isKicked=false;
+	boolean isLaunched=false;
 	boolean kickAttack=false;
 	FixtureDef box;
 	float health=Constants.INITIAL_HEALTH;
@@ -51,6 +51,7 @@ public class Player
 	float calculatorDuration=100f;
 	boolean lockPlayerRight=false;
 	boolean lockPlayerLeft=false;
+	boolean collectHealth=false;
 
 
 	public Player(Texture sheet,Texture attack, int rows, int cols)
@@ -211,21 +212,21 @@ public class Player
 		fixtureDef.friction=FRICTION;
 	}
 
-	public void getKicked(boolean goLeft,float kickPower,boolean kickDamage)
+	public void getKicked(boolean goLeft,float kickPower,float kickDamage)
 	{
 		body.setLinearVelocity(new Vector2(0f,0f));
 		if (goLeft)
 			body.applyLinearImpulse(-kickPower,0.4f,body.getPosition().x,body.getPosition().y,true);
 		else
 			body.applyLinearImpulse(kickPower,0.4f,body.getPosition().x,body.getPosition().y,true);
-		if (kickDamage)
+		if (kickDamage!=0)
 		{
-			health-=5f;
+			health-=kickDamage;
 			kickColor=true;
 			if (health<0)
 				health=0;
 		}
-		isKicked=true;
+		isLaunched=true;
 	}
 
 }

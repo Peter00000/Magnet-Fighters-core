@@ -269,7 +269,7 @@ public class GameController implements Screen{
 			{
 				spawnItem(1);
 			}
-			if (rand>0.9990)
+			if (rand>0.9995)
 			{
 				spawnItem(2);
 			}
@@ -413,6 +413,9 @@ public class GameController implements Screen{
 
 		if (player.kickColor)
 			shapeRenderer.setColor(Color.BLUE);
+		if (player.collectHealth)
+			shapeRenderer.setColor(Color.MAGENTA);
+
 		if (player.calculatorAttack)
 		{
 			shapeRenderer.setColor(Color.LIGHT_GRAY);
@@ -444,10 +447,10 @@ public class GameController implements Screen{
 		}
 		if (player2.kickAttack)
 		{
-			if (!player1.isKicked)
+			if (!player1.isLaunched)
 			{
-				player1.getKicked(player2.sprite.getX()>player1.sprite.getX(),1f,true);
-				player2.getKicked(player2.sprite.getX()<player1.sprite.getX(),0.2f,false);
+				player1.getKicked(player2.sprite.getX()>player1.sprite.getX(),1f,5f);
+				player2.getKicked(player2.sprite.getX()<player1.sprite.getX(),0.2f,0f);
 				player2.kickAttack=false;
 				game.sounds.playSound(0, 0,Constants.PUNCH_SOUND_LENGTH);
 			}
@@ -455,10 +458,10 @@ public class GameController implements Screen{
 
 		else if (player1.kickAttack)
 		{
-			if (!player2.isKicked)
+			if (!player2.isLaunched)
 			{
-				player2.getKicked(player1.sprite.getX()>player2.sprite.getX(),1f,true);
-				player1.getKicked(player1.sprite.getX()<player2.sprite.getX(),0.2f,false);
+				player2.getKicked(player1.sprite.getX()>player2.sprite.getX(),1f,5f);
+				player1.getKicked(player1.sprite.getX()<player2.sprite.getX(),0.2f,0f);
 				player1.kickAttack=false;
 				game.sounds.playSound(0, 0,Constants.PUNCH_SOUND_LENGTH);
 			}
@@ -466,7 +469,7 @@ public class GameController implements Screen{
 	}
 	public void controlPlayer(Player player, int up,int down,int right,int left,int kick,int special)
 	{
-		if (Gdx.input.isKeyPressed(special)&&player.calculatorEquipped&&!player.isKicked)
+		if (Gdx.input.isKeyPressed(special)&&player.calculatorEquipped&&!player.isLaunched)
 		{
 			player.calculatorAttack=true;
 			player.calculatorDuration-=0.5f;
@@ -498,18 +501,19 @@ public class GameController implements Screen{
 		}
 		else
 			player.calculatorAttack=false;
-		if (player.isKicked)
+		if (player.isLaunched||player.collectHealth)
 			player.invincibility++;
 		if (player.invincibility>20)
 		{
-			player.isKicked=false;
+			player.collectHealth=false;
+			player.isLaunched=false;
 			player.kickColor=false;
 			player.invincibility=0;
 		}
 		if (player.sprite.getY()<(-Gdx.graphics.getHeight()/2-100)||player.sprite.getX()<(-Gdx.graphics.getWidth()/2-300))
 			player.health=0;
 		batch.setColor(player.color);
-		if (Gdx.input.isKeyPressed(up)&&!player.isKicked&&!player.lockPlayerRight)
+		if (Gdx.input.isKeyPressed(up)&&!player.isLaunched&&!player.lockPlayerRight)
 		{
 			if (!player.isJumping)
 			{
@@ -517,7 +521,7 @@ public class GameController implements Screen{
 			}
 			player.jump();
 		}
-		if (Gdx.input.isKeyPressed(down)&&!player.isKicked)
+		if (Gdx.input.isKeyPressed(down)&&!player.isLaunched)
 		{
 			player.fallFast();
 		}
@@ -544,11 +548,11 @@ public class GameController implements Screen{
 			player.kick=true;
 			player.kickAttack=true;
 		}
-		if (Gdx.input.isKeyPressed(right)&&!player.isKicked&&!player.lockPlayerRight)
+		if (Gdx.input.isKeyPressed(right)&&!player.isLaunched&&!player.lockPlayerRight)
 		{
 			player.moveRight();
 		}
-		else if (Gdx.input.isKeyPressed(left)&&!player.isKicked&&!player.lockPlayerLeft)
+		else if (Gdx.input.isKeyPressed(left)&&!player.isLaunched&&!player.lockPlayerLeft)
 		{
 			player.moveLeft();
 		}	
