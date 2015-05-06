@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
@@ -71,23 +72,36 @@ public class GameController implements Screen{
 		/*Game initialization*/
 		batch = new SpriteBatch();
 		world = new World(new Vector2(0, Constants.GRAVITY), true);
-		if (Constants.stage==1)
+		
+		TextureRegion[][] tmp = TextureRegion.split(Assets.calcButtonSheet, Assets.calcButtonSheet.getWidth()
+				/2, Assets.calcButtonSheet.getHeight()/2);
+		Assets.calcButtons=new TextureRegion[4];
+		int index=0;
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) 
+			{
+				Assets.calcButtons[index] = tmp[i][j];
+				index++;
+			}
+		}
+
+		if (Assets.stage==1)
 			background=Assets.computerlab;
-		if (Constants.stage==2)
+		if (Assets.stage==2)
 			background=Assets.testtubes;
-		if (Constants.stage==3)
+		if (Assets.stage==3)
 			background=Assets.bandsaws;
 		winScreen=Assets.winscreen;
+		
 		Texture walkSheet=Assets.player1walk;
 		Texture attackSheet=Assets.player1attack;
 		player1=new Player(walkSheet,attackSheet,Constants.FRAMEROWS,Constants.FRAMECOLS);
 		player1=preparePlayer(player1);
-		player1.color=Color.WHITE;
 		Texture walkSheet2=Assets.player2walk;
 		Texture attackSheet2=Assets.player2attack;
 		player2=new Player(walkSheet2,attackSheet2,Constants.FRAMEROWS,Constants.FRAMECOLS);
 		player2=preparePlayer(player2);
-		player2.color=Color.WHITE;
+		
 		if (Assets.floor_enabled)
 		{
 			floor=Assets.floor;
@@ -103,39 +117,28 @@ public class GameController implements Screen{
 			rightedge=Assets.rightedge;
 			rightedge=preparePlatform(rightedge);
 		}
-		if (Constants.stage==1)
+		
+		if (Assets.stage==1)
 			platforms=Assets.complabPlatforms;
-		if (Constants.stage==2)
+		if (Assets.stage==2)
 			platforms=Assets.testtubePlatforms;
-		if (Constants.stage==3)
-			platforms=Assets.bandsawPlatforms;
+		if (Assets.stage==3)
+			platforms=Assets.bandsawPlatforms;	
 		for (int i=0;i<platforms.length;i++)
 			platforms[i]=prepareFloatingPlatform(platforms[i]);
+		
 		projectiles=new ArrayList<Projectile>();
 		items=new ArrayList<Item>();
+		
 		for (int i=0;i<Assets.initItems;i++)
 		{
-			if (Constants.stage==1)
-			{
-				items.add(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
-				items.add(new Item(Assets.gradeTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,40,40,2));
-			}
-			if (Constants.stage==2)
-			{
-				items.add(new Item(Assets.calculatorTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,30,70,1));
-				items.add(new Item(Assets.gradeTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,40,40,2));
-			}
-			if (Constants.stage==3)
-			{
-				items.add(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
-				items.add(new Item(Assets.gradeTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,40,40,2));
-			}
+			spawnItem(1);
+			spawnItem(2);
 		}
-		for (int i=0;i<items.size();i++)
-			prepareItem(items.get(i));
+		
 		/*Windows and world setting*/
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		CollisionDetector c=new CollisionDetector();
+		CollisionHandler c=new CollisionHandler();
 		Player[]players={player1,player2};
 		EdgePlatform[]edges={floor,leftedge,rightedge};
 		c.edges=edges; 
@@ -204,10 +207,6 @@ public class GameController implements Screen{
 		batch.begin();
 		batch.setColor(Color.WHITE);
 		batch.draw(background,-Gdx.graphics.getWidth()/2,-Gdx.graphics.getHeight()/2,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		if (player1.contact&&player2.contact)
-		{
-			kickPlayers();
-		}
 		controlPlayer(player1,Keys.UP,Keys.DOWN,Keys.RIGHT,Keys.LEFT,Keys.SHIFT_RIGHT,Keys.SLASH);
 		controlPlayer(player2,Keys.W,Keys.S,Keys.D,Keys.A,Keys.NUM_1,Keys.NUM_2);
 		controlProjectiles();
@@ -254,7 +253,7 @@ public class GameController implements Screen{
 			}
 			projectiles.get(i).sprite.setPosition((projectiles.get(i).body.getPosition().x * Constants.PIXELS_TO_METERS) - projectiles.get(i).sprite.getWidth()/2,(projectiles.get(i).body.getPosition().y * Constants.PIXELS_TO_METERS) -projectiles.get(i).sprite.getHeight()/2);
 			projectiles.get(i).sprite.setOrigin(projectiles.get(i).sprite.getWidth()/2, projectiles.get(i).sprite.getHeight()/2);
-			projectiles.get(i).sprite.setRotation((projectiles.get(i).body.getAngle() * MathUtils.radiansToDegrees)%360);
+		//	projectiles.get(i).sprite.setRotation((projectiles.get(i).body.getAngle() * MathUtils.radiansToDegrees)%360);
 			projectiles.get(i).sprite.setOriginCenter();
 			projectiles.get(i).sprite.draw(batch);
 		}
@@ -300,21 +299,21 @@ public class GameController implements Screen{
 	public void spawnItem(int id)
 	{
 		Item i = null;
-		if (Constants.stage==1)
+		if (Assets.stage==1)
 		{
 			if (id==1)
 				i=(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
 			if (id==2)
 				i=(new Item(Assets.gradeTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,40,40,2));
 		}
-		if (Constants.stage==2)
+		if (Assets.stage==2)
 		{
 			if (id==1)
 				i=(new Item(Assets.calculatorTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,30,70,1));
 			if (id==2)
 				i=(new Item(Assets.gradeTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,40,40,2));
 		}
-		if (Constants.stage==3)
+		if (Assets.stage==3)
 		{
 			int rand=(int)(Math.random()*2);
 			if (id==1)
@@ -358,9 +357,9 @@ public class GameController implements Screen{
 	{
 		if (num==1)
 		{
-			if (Constants.stage==1)
+			if (Assets.stage==1)
 				items.add(new Item(Assets.calculatorTexture,(float) (Math.random()*Assets.labSpawn),Gdx.graphics.getHeight()*3/4,30,70,1));
-			if (Constants.stage==2)
+			if (Assets.stage==2)
 				items.add(new Item(Assets.calculatorTexture,Assets.tubeSpawn[(int)(Math.random()*4)],Gdx.graphics.getHeight()*3/4,30,70,1));
 		}
 	}
@@ -414,7 +413,7 @@ public class GameController implements Screen{
 		if (player.kickColor)
 			shapeRenderer.setColor(Color.BLUE);
 		if (player.collectHealth)
-			shapeRenderer.setColor(Color.MAGENTA);
+			shapeRenderer.setColor(Color.PINK);
 
 		if (player.calculatorAttack)
 		{
@@ -469,6 +468,10 @@ public class GameController implements Screen{
 	}
 	public void controlPlayer(Player player, int up,int down,int right,int left,int kick,int special)
 	{
+		if (player1.contact&&player2.contact)
+		{
+			kickPlayers();
+		}
 		if (Gdx.input.isKeyPressed(special)&&player.calculatorEquipped&&!player.isLaunched)
 		{
 			player.calculatorAttack=true;

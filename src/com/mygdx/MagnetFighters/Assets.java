@@ -2,9 +2,13 @@ package com.mygdx.MagnetFighters;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Assets
 {
+	static float stage=3;
+	static float initItems=0;
+	
 	static final float scaledWidth = Gdx.graphics.getWidth()/Constants.PIXELS_TO_METERS;
 	static final float scaledHeight = (Gdx.graphics.getHeight()/2)/Constants.PIXELS_TO_METERS;
 
@@ -22,6 +26,8 @@ public class Assets
 	static final Texture platformTexture=new Texture(Gdx.files.internal("platformcomp.jpg"));
 	static final Texture calculatorTexture=new Texture(Gdx.files.internal("calculator.png"));
 	static final Texture gradeTexture=new Texture(Gdx.files.internal("grade.png"));
+	static final Texture calcButtonSheet=new Texture(Gdx.files.internal("calcbuttons.png"));
+	static TextureRegion[] calcButtons;
 
 	//Edge Platform settings
 	static final boolean floor_enabled=false;
@@ -101,13 +107,12 @@ public class Assets
 	//Weapon settings
 	static float weaponSize=45f;
 
-	//Item settings
-	static float initItems=0;
-
+	//Spawn areas
 	static float labSpawn=-Gdx.graphics.getWidth()/2;
 
 	static float[] tubeSpawn={-700f,-400f,-100f,480f};
 
 	static float[] bandsawSpawn={140f,230f};
+	
 
 }

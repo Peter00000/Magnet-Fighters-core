@@ -23,5 +23,4 @@ public class Constants
 	final static float COMPLAB_FRICTION=0.5f;
 	final static float TESTTUBE_FRICTION=1f;
 	final static float BANDSAW_FRICTION=1f;
-	static int stage=1;
 }

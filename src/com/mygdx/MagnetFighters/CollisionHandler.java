@@ -7,7 +7,7 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 
-public class CollisionDetector implements ContactListener
+public class CollisionHandler implements ContactListener
 {
 	Player[] players;
 	FloatingPlatform[] platforms;
@@ -141,7 +141,7 @@ public class CollisionDetector implements ContactListener
 						if (items.get(i).ID==2)
 						{
 							players[j].collectHealth=true;
-							players[j].health+=20f;
+							players[j].health+=40f;
 							if (players[j].health>100f)
 								players[j].health=100f;
 						}
@@ -237,5 +237,4 @@ public class CollisionDetector implements ContactListener
 		// TODO Auto-generated method stub
 
 	}
-
 }

@@ -56,11 +56,11 @@ public class FloatingPlatform
 		bodyDef.position.set(new Vector2(posX/Constants.PIXELS_TO_METERS,posY/Constants.PIXELS_TO_METERS));
 		fixtureDef = new FixtureDef();
 		fixtureDef.shape=shape;
-		if (Constants.stage==1)
+		if (Assets.stage==1)
 			friction=Constants.COMPLAB_FRICTION;
-		if (Constants.stage==2)
+		if (Assets.stage==2)
 			friction=Constants.TESTTUBE_FRICTION;
-		if (Constants.stage==3)
+		if (Assets.stage==3)
 			friction=Constants.BANDSAW_FRICTION;
 		fixtureDef.friction=friction;
 		sprite.setPosition(bodyDef.position.x*Constants.PIXELS_TO_METERS-sprite.getWidth()/2, bodyDef.position.y*Constants.PIXELS_TO_METERS-sprite.getHeight()/2);

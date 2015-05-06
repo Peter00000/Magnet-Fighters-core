@@ -34,7 +34,7 @@ public class Player
 	final int INITIAL_SPRITE_INDEX=6;
 	final int JUMP_SPRITE_INDEX=3;
 	final float MASS=80f;
-	Color color;
+	Color color=Color.WHITE;
 	Fixture contactFixture;
 	int numFootContacts;
 	boolean kick=false;
@@ -84,9 +84,9 @@ public class Player
 		}
 		walkAnimation = new Animation(0.025f, walkFrames);
 		sprite=new Sprite(walkFrames[INITIAL_SPRITE_INDEX]);
-		if (Constants.stage==1)
+		if (Assets.stage==1)
 			sprite.setPosition(-(float)Math.random()*Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()*2);
-		if (Constants.stage==2)
+		if (Assets.stage==2)
 		{
 			int rand=(int)(Math.random()*4);
 			if (rand==0)
@@ -98,7 +98,7 @@ public class Player
 			if (rand==3)
 				sprite.setPosition(480,Gdx.graphics.getHeight()*2);
 		}
-		if (Constants.stage==3)
+		if (Assets.stage==3)
 		{
 			int rand=(int)(Math.random()*2);
 			if (rand==0)

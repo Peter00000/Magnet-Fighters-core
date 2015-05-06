@@ -20,7 +20,7 @@ public class Projectile extends Item
 	{
 		World temp=new World(new Vector2(0f,0f),false);
 		temp.dispose();
-		sprite=new Sprite(texture);
+		sprite=new Sprite(Assets.calcButtons[(int)(Math.random()*4)]);
 		sprite.setPosition(INITX, INITY);
 		sprite.setSize(width,height);
 		bodyDef=new BodyDef();
