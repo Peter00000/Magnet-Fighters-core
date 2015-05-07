@@ -1,13 +1,6 @@
 package com.mygdx.MagnetFighters;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
@@ -24,7 +17,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.utils.Array;
 
 public class GameController implements Screen{
 
@@ -72,7 +64,7 @@ public class GameController implements Screen{
 		/*Game initialization*/
 		batch = new SpriteBatch();
 		world = new World(new Vector2(0, Constants.GRAVITY), true);
-		
+
 		TextureRegion[][] tmp = TextureRegion.split(Assets.calcButtonSheet, Assets.calcButtonSheet.getWidth()
 				/2, Assets.calcButtonSheet.getHeight()/2);
 		Assets.calcButtons=new TextureRegion[4];
@@ -92,7 +84,7 @@ public class GameController implements Screen{
 		if (Assets.stage==3)
 			background=Assets.bandsaws;
 		winScreen=Assets.winscreen;
-		
+
 		Texture walkSheet=Assets.player1walk;
 		Texture attackSheet=Assets.player1attack;
 		player1=new Player(walkSheet,attackSheet,Constants.FRAMEROWS,Constants.FRAMECOLS);
@@ -101,7 +93,7 @@ public class GameController implements Screen{
 		Texture attackSheet2=Assets.player2attack;
 		player2=new Player(walkSheet2,attackSheet2,Constants.FRAMEROWS,Constants.FRAMECOLS);
 		player2=preparePlayer(player2);
-		
+
 		if (Assets.floor_enabled)
 		{
 			floor=Assets.floor;
@@ -117,7 +109,7 @@ public class GameController implements Screen{
 			rightedge=Assets.rightedge;
 			rightedge=preparePlatform(rightedge);
 		}
-		
+
 		if (Assets.stage==1)
 			platforms=Assets.complabPlatforms;
 		if (Assets.stage==2)
@@ -126,16 +118,16 @@ public class GameController implements Screen{
 			platforms=Assets.bandsawPlatforms;	
 		for (int i=0;i<platforms.length;i++)
 			platforms[i]=prepareFloatingPlatform(platforms[i]);
-		
+
 		projectiles=new ArrayList<Projectile>();
 		items=new ArrayList<Item>();
-		
+
 		for (int i=0;i<Assets.initItems;i++)
 		{
 			spawnItem(1);
 			spawnItem(2);
 		}
-		
+
 		/*Windows and world setting*/
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		CollisionHandler c=new CollisionHandler();
@@ -154,48 +146,10 @@ public class GameController implements Screen{
 	@Override
 	public void render (float delta) 
 	{
-
-		//Key 9-8-7 combo to reset the game
-		if (Gdx.input.isKeyPressed(Keys.NUM_9))
-			if (Gdx.input.isKeyPressed(Keys.NUM_8))
-				if (Gdx.input.isKeyPressed(Keys.NUM_7))
-				{
-					game.sounds.stopMusic();
-					game.ui.gameState=1;
-					game.setScreen(game.ui);
-					game.sounds.playMusic(6);
-					resetGame();
-				}
-
-		//Key 6-5 to reset the game with random music
-		if (Gdx.input.isKeyPressed(Keys.NUM_6))
-			if (Gdx.input.isKeyPressed(Keys.NUM_5))
-			{
-				game.sounds.stopMusic();
-				game.sounds.playMusic((int)(Math.random()*6));
-				resetGame();
-			}
-
+		checkKeyInputs();
 		if (player1.health==0||player2.health==0)
 		{
-			if (gameState)
-			{ 
-				game.sounds.stopSound();
-				try 
-				{
-					Thread.sleep(2000);
-					gameState=false;
-				} catch (InterruptedException e) 
-				{
-					e.printStackTrace();
-				}
-				game.sounds.stopMusic();
-				game.sounds.playMusic(7);
-			}
-			if (player1.health>0)
-				winMessage(player1);
-			else
-				winMessage(player2);
+			endGame();
 			return;
 		}
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -205,7 +159,6 @@ public class GameController implements Screen{
 		batch.setProjectionMatrix(camera.combined);
 		DebugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PIXELS_TO_METERS, Constants.PIXELS_TO_METERS, 0);
 		batch.begin();
-		batch.setColor(Color.WHITE);
 		batch.draw(background,-Gdx.graphics.getWidth()/2,-Gdx.graphics.getHeight()/2,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		controlPlayer(player1,Keys.UP,Keys.DOWN,Keys.RIGHT,Keys.LEFT,Keys.SHIFT_RIGHT,Keys.SLASH);
 		controlPlayer(player2,Keys.W,Keys.S,Keys.D,Keys.A,Keys.NUM_1,Keys.NUM_2);
@@ -253,7 +206,7 @@ public class GameController implements Screen{
 			}
 			projectiles.get(i).sprite.setPosition((projectiles.get(i).body.getPosition().x * Constants.PIXELS_TO_METERS) - projectiles.get(i).sprite.getWidth()/2,(projectiles.get(i).body.getPosition().y * Constants.PIXELS_TO_METERS) -projectiles.get(i).sprite.getHeight()/2);
 			projectiles.get(i).sprite.setOrigin(projectiles.get(i).sprite.getWidth()/2, projectiles.get(i).sprite.getHeight()/2);
-		//	projectiles.get(i).sprite.setRotation((projectiles.get(i).body.getAngle() * MathUtils.radiansToDegrees)%360);
+			//	projectiles.get(i).sprite.setRotation((projectiles.get(i).body.getAngle() * MathUtils.radiansToDegrees)%360);
 			projectiles.get(i).sprite.setOriginCenter();
 			projectiles.get(i).sprite.draw(batch);
 		}
@@ -581,6 +534,28 @@ public class GameController implements Screen{
 		world.destroyBody(i.body);
 	}
 
+	public void checkKeyInputs()
+	{
+		if (Gdx.input.isKeyPressed(Keys.NUM_9))
+			if (Gdx.input.isKeyPressed(Keys.NUM_8))
+				if (Gdx.input.isKeyPressed(Keys.NUM_7))
+				{
+					game.sounds.stopMusic();
+					game.changeScreen(1);
+					game.sounds.playMusic(6);
+					resetGame();
+				}
+
+		if (Gdx.input.isKeyPressed(Keys.NUM_6))
+			if (Gdx.input.isKeyPressed(Keys.NUM_5))
+			{
+				game.sounds.stopMusic();
+				game.sounds.playMusic((int)(Math.random()*6));
+				resetGame();
+			}
+
+	}
+
 	public void winMessage(Player winner)
 	{
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -601,6 +576,29 @@ public class GameController implements Screen{
 		this.dispose();
 		importAssets();
 		gameState=true;
+	}
+
+	public void endGame()
+	{
+		if (gameState)
+		{ 
+			game.sounds.stopSound();
+			try 
+			{
+				Thread.sleep(2000);
+				gameState=false;
+			} catch (InterruptedException e) 
+			{
+				e.printStackTrace();
+			}
+			game.sounds.stopMusic();
+			game.sounds.playMusic(7);
+		}
+		if (player1.health>0)
+			winMessage(player1);
+		else
+			winMessage(player2);
+		return;
 	}
 
 	@Override

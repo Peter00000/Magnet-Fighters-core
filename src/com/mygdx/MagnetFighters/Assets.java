@@ -6,7 +6,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Assets
 {
-	static float stage=3;
+	static float stage=2;
+	static final float TUTORIAL_LEVEL=1;
 	static float initItems=0;
 	
 	static final float scaledWidth = Gdx.graphics.getWidth()/Constants.PIXELS_TO_METERS;

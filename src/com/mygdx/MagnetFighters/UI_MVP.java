@@ -148,8 +148,8 @@ public class UI_MVP implements Screen {
 		{ 
 			game.sounds.stopMusic(); 
 			game.sounds.playMusic((int)(Math.random()*6)); 
-			game.setScreen(game.g); 
-			game.g.resetGame();
+			game.changeScreen(1); 
+			game.playGame.resetGame();
 			this.hide();
 		}
 
